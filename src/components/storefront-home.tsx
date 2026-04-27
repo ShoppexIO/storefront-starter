@@ -62,6 +62,7 @@ export function StorefrontHome() {
   }, []);
 
   const shopName = state.shop?.name ?? themeConfig.brandName;
+  const visibleProducts = state.products.slice(0, 24);
 
   return (
     <main>
@@ -130,7 +131,7 @@ export function StorefrontHome() {
 
         {state.status === "ready" && state.products.length > 0 ? (
           <div className="product-grid">
-            {state.products.map((product) => (
+            {visibleProducts.map((product) => (
               <ProductCard product={product} key={product.uniqid} />
             ))}
           </div>

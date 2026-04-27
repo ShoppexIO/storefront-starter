@@ -37,7 +37,7 @@ export async function loadStorefrontData(): Promise<StorefrontDataResult> {
   return {
     success: true,
     shop: result.data?.shop ?? null,
-    products: (result.data?.products ?? []).slice(0, 24),
+    products: result.data?.products ?? [],
     sample: false,
   };
 }

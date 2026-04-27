@@ -43,4 +43,20 @@ describe("product-utils", () => {
     expect(getVariant(item, "team")).toEqual(expect.objectContaining({ id: "team", title: "Team" }));
     expect(getQuantityBounds(item, "team")).toEqual({ min: 2, max: 4 });
   });
+
+  it("preserves price variant quantity bounds when variants are prefilled", () => {
+    const item = product({
+      quantity_min: 1,
+      quantity_max: 10,
+      variants: [
+        { id: "team", title: "Team", price: 1999 },
+      ],
+      price_variants: [
+        { id: "team", title: "Team", price: 1999, stock: 3, quantity_min: 2, quantity_max: 4 } as never,
+      ],
+    });
+
+    expect(getVariant(item, "team")).toEqual(expect.objectContaining({ id: "team", stock: 3 }));
+    expect(getQuantityBounds(item, "team")).toEqual({ min: 2, max: 4 });
+  });
 });

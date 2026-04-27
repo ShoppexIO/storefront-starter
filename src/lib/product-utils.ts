@@ -54,9 +54,37 @@ function priceVariantToProductOption(variant: PriceVariantWithStock): VariantWit
   };
 }
 
+function mergePriceVariantBounds(
+  variant: ProductVariant,
+  priceVariant: PriceVariantWithStock | undefined,
+): ProductVariant {
+  if (!priceVariant) {
+    return variant;
+  }
+
+  const variantWithBounds = variant as VariantWithQuantityBounds;
+  return {
+    ...variant,
+    stock: typeof variant.stock === "number" ? variant.stock : priceVariant.stock,
+    quantity_min: variantWithBounds.quantity_min ?? priceVariant.quantity_min,
+    quantity_max: variantWithBounds.quantity_max ?? priceVariant.quantity_max,
+    quantityMin: variantWithBounds.quantityMin ?? priceVariant.quantityMin,
+    quantityMax: variantWithBounds.quantityMax ?? priceVariant.quantityMax,
+  } as ProductVariant;
+}
+
 export function getProductOptions(product: Product): ProductVariant[] {
   if (product.variants && product.variants.length > 0) {
-    return product.variants;
+    const priceVariantMap = new Map(
+      (product.price_variants ?? []).map((variant) => [
+        variant.id,
+        variant as PriceVariantWithStock,
+      ]),
+    );
+
+    return product.variants.map((variant) =>
+      mergePriceVariantBounds(variant, priceVariantMap.get(variant.id))
+    );
   }
 
   return (product.price_variants ?? []).map((variant) =>
