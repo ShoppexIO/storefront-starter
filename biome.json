@@ -1,0 +1,45 @@
+{
+  "files": {
+    "ignoreUnknown": true,
+    "includes": [
+      "**",
+      "!node_modules/**",
+      "!.next/**",
+      "!.turbo/**",
+      "!next-env.d.ts"
+    ]
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  },
+  "formatter": {
+    "enabled": false
+  },
+  "assist": {
+    "enabled": false
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": false,
+      "correctness": {
+        "noUnusedVariables": "warn",
+        "noUnusedImports": "warn",
+        "useExhaustiveDependencies": "warn"
+      },
+      "suspicious": {
+        "noArrayIndexKey": "off",
+        "noConsole": "off",
+        "noExplicitAny": "warn"
+      },
+      "performance": {
+        "noImgElement": "off"
+      },
+      "style": {
+        "useImportType": "off"
+      }
+    }
+  }
+}
