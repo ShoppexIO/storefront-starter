@@ -64,8 +64,10 @@ export function ProductDetail({ slug }: ProductDetailProps) {
       }
 
       const selectedVariantId = getVariantId(result.product);
+      const selectedQuantity = getQuantityBounds(result.product, selectedVariantId).min;
       setProduct(result.product);
       setVariantId(selectedVariantId);
+      setQuantity(selectedQuantity);
       setRelatedProducts(result.products);
       setSample(result.sample);
       setLoading(false);
@@ -162,7 +164,7 @@ export function ProductDetail({ slug }: ProductDetailProps) {
               <span>Option</span>
               <Select value={variantId} onValueChange={(value) => {
                   setVariantId(value);
-                  setQuantity(1);
+                  setQuantity(getQuantityBounds(product, value).min);
                 }}>
                 <SelectTrigger className="store-select">
                   <SelectValue />

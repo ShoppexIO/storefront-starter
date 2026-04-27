@@ -100,11 +100,21 @@ export async function POST(request: Request) {
     order.total ? `Total: ${order.total} ${order.currency ?? ""}`.trim() : null,
   ].filter(Boolean).join("\n");
 
-  const response = await fetch(discordWebhookUrl, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ content }),
-  });
+  let response: Response;
+  try {
+    response = await fetch(discordWebhookUrl, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ content }),
+    });
+  } catch {
+    return Response.json({
+      received: true,
+      delivered: false,
+    }, {
+      status: 502,
+    });
+  }
 
   return Response.json({
     received: true,

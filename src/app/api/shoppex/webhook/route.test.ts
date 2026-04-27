@@ -18,6 +18,7 @@ async function signPayload(rawBody: string, secret: string): Promise<string> {
 describe("Shoppex webhook route", () => {
   afterEach(() => {
     vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
   });
 
   it("rejects invalid JSON", async () => {
@@ -75,6 +76,22 @@ describe("Shoppex webhook route", () => {
     }));
 
     expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      received: true,
+      delivered: false,
+    });
+  });
+
+  it("returns a structured failure when Discord forwarding throws", async () => {
+    vi.stubEnv("SHOPPEX_DISCORD_WEBHOOK_URL", "https://discord.example/webhook");
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("network down")));
+
+    const response = await POST(new Request("http://localhost/api/shoppex/webhook", {
+      method: "POST",
+      body: JSON.stringify({ event: "order:paid", data: { uniqid: "order_1" } }),
+    }));
+
+    expect(response.status).toBe(502);
     await expect(response.json()).resolves.toMatchObject({
       received: true,
       delivered: false,
