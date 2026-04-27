@@ -134,22 +134,19 @@ export function CheckoutFlow() {
       return;
     }
 
-    let activeReview = cartReview;
-    if (!productsLoaded) {
-      const latestProducts = await refreshCartData();
-      if (!latestProducts) return;
-      activeReview = reviewCartItems(cart.items, latestProducts);
-    }
-
-    if (activeReview.blockingIssues.length > 0) {
-      setNeedsReview(true);
-      setError("Review the cart updates before continuing to payment.");
-      toast.warning("Review cart updates before payment.");
-      return;
-    }
-
     setSubmitting(true);
     try {
+      const latestProducts = await refreshCartData();
+      if (!latestProducts) return;
+      const activeReview = reviewCartItems(cart.items, latestProducts);
+
+      if (activeReview.blockingIssues.length > 0) {
+        setNeedsReview(true);
+        setError("Review the cart updates before continuing to payment.");
+        toast.warning("Review cart updates before payment.");
+        return;
+      }
+
       const result = await getShoppexClient().checkout({
         autoRedirect: true,
         email: email.trim(),
