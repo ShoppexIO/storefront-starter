@@ -56,6 +56,19 @@ describe("reviewCartItems", () => {
     expect(review.blockingIssues[0]?.action).toBe("remove");
   });
 
+  it("removes default cart items when the product now requires a variant", () => {
+    const review = reviewCartItems(
+      [cartItem()],
+      [product({
+        variants: [{ id: "premium", title: "Premium", price: 1200, stock: 5 }],
+      })],
+    );
+
+    expect(review.blockingIssues).toHaveLength(1);
+    expect(review.blockingIssues[0]?.kind).toBe("missing-option");
+    expect(review.blockingIssues[0]?.action).toBe("remove");
+  });
+
   it("records price changes as a notice", () => {
     const review = reviewCartItems(
       [cartItem({ price_data: { unit_price: 1000 } })],

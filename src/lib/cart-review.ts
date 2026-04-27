@@ -35,13 +35,20 @@ export type CartReview = {
 };
 
 function hasProductOption(product: Product, variantId: string): boolean {
-  if (!variantId || variantId === DEFAULT_VARIANT_ID) {
-    return true;
+  const variants = product.variants ?? [];
+  const priceVariants = product.price_variants ?? [];
+
+  if (!variantId) {
+    return variants.length === 0 && priceVariants.length === 0;
+  }
+
+  if (variantId === DEFAULT_VARIANT_ID) {
+    return variants.length === 0 && priceVariants.length === 0;
   }
 
   return Boolean(
     getVariant(product, variantId) ??
-      product.price_variants?.find((entry) => entry.id === variantId),
+      priceVariants.find((entry) => entry.id === variantId),
   );
 }
 
