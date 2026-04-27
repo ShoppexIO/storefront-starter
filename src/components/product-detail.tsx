@@ -45,10 +45,17 @@ export function ProductDetail({ slug }: ProductDetailProps) {
 
     async function loadProduct() {
       setLoading(true);
+      setProduct(null);
+      setVariantId("");
+      setQuantity(1);
+      setMessage(null);
       const result = await loadProductData(slug);
       if (cancelled) return;
 
       if (!result.success) {
+        setProduct(null);
+        setVariantId("");
+        setQuantity(1);
         setMessage(result.message);
         setRelatedProducts(result.products);
         setSample(result.sample);
