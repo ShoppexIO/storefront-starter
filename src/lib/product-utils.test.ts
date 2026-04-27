@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Product } from "@shoppexio/storefront";
-import { getProductOptions, getQuantityBounds, getVariant } from "@/lib/product-utils";
+import { getMaxSelectableQuantity, getProductOptions, getQuantityBounds, getVariant } from "@/lib/product-utils";
 
 function product(overrides: Partial<Product> = {}): Product {
   return {
@@ -58,5 +58,12 @@ describe("product-utils", () => {
 
     expect(getVariant(item, "team")).toEqual(expect.objectContaining({ id: "team", stock: 3 }));
     expect(getQuantityBounds(item, "team")).toEqual({ min: 2, max: 4 });
+  });
+
+  it("caps selectable quantity by finite stock and quantity maximum", () => {
+    expect(getMaxSelectableQuantity(product({ stock: 2, quantity_max: 10 }))).toBe(2);
+    expect(getMaxSelectableQuantity(product({ stock: 20, quantity_max: 10 }))).toBe(10);
+    expect(getMaxSelectableQuantity(product({ stock: -1, quantity_max: 10 }))).toBe(10);
+    expect(getMaxSelectableQuantity(product({ stock: -1, quantity_max: -1 }))).toBe(Number.POSITIVE_INFINITY);
   });
 });

@@ -158,6 +158,17 @@ export function getQuantityBounds(product: Product, variantId?: string | null): 
   };
 }
 
+export function getMaxSelectableQuantity(product: Product, variantId?: string | null): number {
+  const bounds = getQuantityBounds(product, variantId);
+  const stock = getAvailableStock(product, variantId);
+  const candidates = [
+    bounds.max > 0 ? bounds.max : null,
+    isUnlimitedStock(stock) ? null : stock,
+  ].filter((value): value is number => typeof value === "number" && value >= 0);
+
+  return candidates.length > 0 ? Math.min(...candidates) : Number.POSITIVE_INFINITY;
+}
+
 export function formatStockLabel(product: Product, variantId?: string | null): string {
   const stock = getAvailableStock(product, variantId);
   if (isUnlimitedStock(stock)) return "In stock";

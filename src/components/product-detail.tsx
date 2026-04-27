@@ -14,14 +14,13 @@ import { shoppexConfig } from "@/lib/shoppex-config";
 import { loadProductData } from "@/lib/storefront-data";
 import {
   formatStockLabel,
-  getAvailableStock,
+  getMaxSelectableQuantity,
   getProductImage,
   getProductOptions,
   getQuantityBounds,
   getUnitPrice,
   getVariantId,
   isSoldOut,
-  isUnlimitedStock,
 } from "@/lib/product-utils";
 
 type ProductDetailProps = {
@@ -82,10 +81,10 @@ export function ProductDetail({ slug }: ProductDetailProps) {
 
   const imageUrl = getProductImage(product);
   const bounds = product ? getQuantityBounds(product, variantId) : { min: 1, max: -1 };
-  const stock = product ? getAvailableStock(product, variantId) : -1;
   const soldOut = product ? isSoldOut(product, variantId) : false;
   const productOptions = useMemo(() => product ? getProductOptions(product) : [], [product]);
-  const maxSelectableQuantity = bounds.max > 0 ? bounds.max : isUnlimitedStock(stock) ? Number.POSITIVE_INFINITY : stock;
+  const maxSelectableQuantity = product ? getMaxSelectableQuantity(product, variantId) : 0;
+  const hasSelectableQuantity = maxSelectableQuantity >= bounds.min;
   const canIncrease = product ? !soldOut && quantity < maxSelectableQuantity : false;
   const price = useMemo(() => product ? getUnitPrice(product, variantId) : 0, [product, variantId]);
   const cartProducts = useMemo(() => {
@@ -184,8 +183,8 @@ export function ProductDetail({ slug }: ProductDetailProps) {
               <span>{quantity}</span>
               <Button type="button" variant="ghost" onClick={() => setQuantity(Math.min(maxSelectableQuantity, quantity + 1))} disabled={!canIncrease} aria-label="Increase quantity">+</Button>
             </div>
-            <Button className="primary-action" type="button" disabled={soldOut} onClick={addToCart}>
-              {soldOut ? "Sold out" : shoppexConfig.checkoutMode === "buy-now" ? "Buy now" : "Add to cart"}
+            <Button className="primary-action" type="button" disabled={soldOut || !hasSelectableQuantity} onClick={addToCart}>
+              {soldOut ? "Sold out" : !hasSelectableQuantity ? "Unavailable" : shoppexConfig.checkoutMode === "buy-now" ? "Buy now" : "Add to cart"}
             </Button>
           </div>
         </div>
