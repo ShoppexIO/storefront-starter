@@ -47,6 +47,19 @@ describe("Shoppex webhook route", () => {
     expect(response.status).toBe(401);
   });
 
+  it("rejects non-string webhook event values", async () => {
+    const response = await POST(new Request("http://localhost/api/shoppex/webhook", {
+      method: "POST",
+      body: JSON.stringify({ event: 123, data: { uniqid: "order_1" } }),
+    }));
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      received: false,
+      error: "Invalid webhook event",
+    });
+  });
+
   it("accepts a signed paid order webhook", async () => {
     vi.stubEnv("SHOPPEX_WEBHOOK_SECRET", "secret");
     const body = JSON.stringify({ event: "order:paid", data: { uniqid: "order_1" } });

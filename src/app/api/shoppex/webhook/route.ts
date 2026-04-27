@@ -69,7 +69,12 @@ export async function POST(request: Request) {
   if (!payload) {
     return Response.json({ received: false, error: "Invalid webhook payload" }, { status: 400 });
   }
-  const eventType = payload?.type ?? payload?.event ?? "unknown";
+  const rawEventType = payload.type ?? payload.event;
+  if (rawEventType !== undefined && typeof rawEventType !== "string") {
+    return Response.json({ received: false, error: "Invalid webhook event" }, { status: 400 });
+  }
+
+  const eventType = rawEventType ?? "unknown";
   const deliveryId = request.headers.get("x-shoppex-delivery") ?? "unknown";
 
   if (!eventType.startsWith("order:paid")) {
