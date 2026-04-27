@@ -48,6 +48,18 @@ describe("reviewCartItems", () => {
     expect(review.blockingIssues[0]?.nextQuantity).toBe(2);
   });
 
+  it("removes items when stock drops below the minimum quantity", () => {
+    const review = reviewCartItems(
+      [cartItem({ quantity: 1 })],
+      [product({ stock: 2, quantity_min: 3 })],
+    );
+
+    expect(review.blockingIssues).toHaveLength(1);
+    expect(review.blockingIssues[0]?.kind).toBe("above-maximum");
+    expect(review.blockingIssues[0]?.action).toBe("remove");
+    expect(review.blockingIssues[0]?.nextQuantity).toBeUndefined();
+  });
+
   it("removes sold-out products", () => {
     const review = reviewCartItems([cartItem()], [product({ stock: 0 })]);
 

@@ -110,6 +110,19 @@ export function reviewCartItems(items: CartItem[], products: Product[]): CartRev
     }
 
     const bounds = getQuantityBounds(product, variantId);
+    const maximumQuantity = getMaximumQuantity(product, variantId);
+    if (maximumQuantity >= 0 && maximumQuantity < bounds.min) {
+      issues.push({
+        key,
+        kind: "above-maximum",
+        item,
+        product,
+        message: `Only ${maximumQuantity} can be purchased right now, which is below the minimum quantity of ${bounds.min}.`,
+        action: "remove",
+      });
+      continue;
+    }
+
     if (item.quantity < bounds.min) {
       issues.push({
         key,
@@ -123,7 +136,6 @@ export function reviewCartItems(items: CartItem[], products: Product[]): CartRev
       continue;
     }
 
-    const maximumQuantity = getMaximumQuantity(product, variantId);
     if (maximumQuantity >= 0 && item.quantity > maximumQuantity) {
       issues.push({
         key,
