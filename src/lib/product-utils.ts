@@ -1,4 +1,4 @@
-import type { CartItem, Product, ProductVariant } from "@shoppexio/storefront";
+import type { CartItem, PriceVariant, Product, ProductVariant } from "@shoppexio/storefront";
 
 export const DEFAULT_VARIANT_ID = "default";
 
@@ -7,6 +7,14 @@ type ProductWithExtendedImages = Product & {
 };
 
 type VariantWithQuantityBounds = ProductVariant & {
+  quantity_min?: number;
+  quantity_max?: number;
+  quantityMin?: number;
+  quantityMax?: number;
+};
+
+type PriceVariantWithStock = PriceVariant & {
+  stock?: number;
   quantity_min?: number;
   quantity_max?: number;
   quantityMin?: number;
@@ -30,12 +38,35 @@ export function getProductImage(product: Product | null | undefined): string | n
 
 export function getVariantId(product: Product, selectedVariantId?: string | null): string {
   if (selectedVariantId) return selectedVariantId;
-  return product.variants?.[0]?.id ?? product.price_variants?.[0]?.id ?? DEFAULT_VARIANT_ID;
+  return getProductOptions(product)[0]?.id ?? DEFAULT_VARIANT_ID;
+}
+
+function priceVariantToProductOption(variant: PriceVariantWithStock): VariantWithQuantityBounds {
+  return {
+    id: variant.id,
+    title: variant.title ?? variant.label ?? "Option",
+    price: typeof variant.price === "number" ? variant.price : Number(variant.price) || 0,
+    stock: typeof variant.stock === "number" ? variant.stock : undefined,
+    quantity_min: variant.quantity_min,
+    quantity_max: variant.quantity_max,
+    quantityMin: variant.quantityMin,
+    quantityMax: variant.quantityMax,
+  };
+}
+
+export function getProductOptions(product: Product): ProductVariant[] {
+  if (product.variants && product.variants.length > 0) {
+    return product.variants;
+  }
+
+  return (product.price_variants ?? []).map((variant) =>
+    priceVariantToProductOption(variant as PriceVariantWithStock)
+  );
 }
 
 export function getVariant(product: Product, variantId?: string | null): ProductVariant | null {
   if (!variantId || variantId === DEFAULT_VARIANT_ID) return null;
-  return product.variants?.find((variant) => variant.id === variantId) ?? null;
+  return getProductOptions(product).find((variant) => variant.id === variantId) ?? null;
 }
 
 export function getUnitPrice(product: Product, variantId?: string | null): number {

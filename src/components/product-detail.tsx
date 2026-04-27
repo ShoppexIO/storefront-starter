@@ -16,6 +16,7 @@ import {
   formatStockLabel,
   getAvailableStock,
   getProductImage,
+  getProductOptions,
   getQuantityBounds,
   getUnitPrice,
   getVariantId,
@@ -74,7 +75,9 @@ export function ProductDetail({ slug }: ProductDetailProps) {
   const bounds = product ? getQuantityBounds(product, variantId) : { min: 1, max: -1 };
   const stock = product ? getAvailableStock(product, variantId) : -1;
   const soldOut = product ? isSoldOut(product, variantId) : false;
-  const canIncrease = product ? isUnlimitedStock(stock) || quantity < Math.min(stock, bounds.max > 0 ? bounds.max : stock) : false;
+  const productOptions = useMemo(() => product ? getProductOptions(product) : [], [product]);
+  const maxSelectableQuantity = bounds.max > 0 ? bounds.max : isUnlimitedStock(stock) ? Number.POSITIVE_INFINITY : stock;
+  const canIncrease = product ? !soldOut && quantity < maxSelectableQuantity : false;
   const price = useMemo(() => product ? getUnitPrice(product, variantId) : 0, [product, variantId]);
   const cartProducts = useMemo(() => {
     if (!product) return relatedProducts;
@@ -147,7 +150,7 @@ export function ProductDetail({ slug }: ProductDetailProps) {
             ) : null}
           </div>
 
-          {product.variants && product.variants.length > 0 ? (
+          {productOptions.length > 0 ? (
             <div className="field">
               <span>Option</span>
               <Select value={variantId} onValueChange={(value) => {
@@ -158,7 +161,7 @@ export function ProductDetail({ slug }: ProductDetailProps) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {product.variants.map((variant) => (
+                  {productOptions.map((variant) => (
                     <SelectItem value={variant.id} key={variant.id}>{variant.title}</SelectItem>
                   ))}
                 </SelectContent>
@@ -170,7 +173,7 @@ export function ProductDetail({ slug }: ProductDetailProps) {
             <div className="quantity-control quantity-control--large">
               <Button type="button" variant="ghost" onClick={() => setQuantity(Math.max(bounds.min, quantity - 1))} aria-label="Decrease quantity">-</Button>
               <span>{quantity}</span>
-              <Button type="button" variant="ghost" onClick={() => setQuantity(quantity + 1)} disabled={!canIncrease} aria-label="Increase quantity">+</Button>
+              <Button type="button" variant="ghost" onClick={() => setQuantity(Math.min(maxSelectableQuantity, quantity + 1))} disabled={!canIncrease} aria-label="Increase quantity">+</Button>
             </div>
             <Button className="primary-action" type="button" disabled={soldOut} onClick={addToCart}>
               {soldOut ? "Sold out" : shoppexConfig.checkoutMode === "buy-now" ? "Buy now" : "Add to cart"}
